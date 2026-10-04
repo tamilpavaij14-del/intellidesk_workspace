@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/acer/intellidesk_workspace/frontend/app/page.tsx"],"sourcesContent":["export default function HomePage() {\r\n  return (\r\n    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>\r\n      <h1>Intellidesk</h1>\r\n      <p>App is running successfully.</p>\r\n    </main>\r\n  );\r\n}\r\n"],"names":["HomePage","style","padding","fontFamily"],"mappings":";;;;;;AAAe,SAASA;IACtB,qBACE,8OAAC;QAAKC,OAAO;YAAEC,SAAS;YAAQC,YAAY;QAAa;;0BACvD,8OAAC;0BAAG;;;;;;0BACJ,8OAAC;0BAAE;;;;;;;;;;;;AAGT"}}]
+}
