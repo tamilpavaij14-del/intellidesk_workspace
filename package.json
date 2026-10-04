@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  },
+  "scripts": {
+    "dev": "concurrently -n frontend,backend -c blue,green \"npm run dev --prefix frontend\" \"npm run dev:backend\"",
+    "dev:backend": "cd backend && venv\\Scripts\\python -m uvicorn main:app --reload --port 8000"
+  }
+}
