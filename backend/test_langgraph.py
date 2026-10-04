@@ -24,3 +24,30 @@ app = graph.compile()
 result = app.invoke({"message": "test"})
 
 print(result)
+
+# ============================================================
+# Story 4.1.2 - Define Graph State Schema
+# ============================================================
+
+from graph.state import AgentState
+
+# AgentState is used as the LangGraph state schema.
+
+
+# ============================================================
+# Story 4.1.3 - Write Planner Node
+# ============================================================
+
+from graph.planner import planner_node
+
+# planner_node creates a plan from the user's request.
+
+
+# ============================================================
+# Story 4.1.4 - Skip Planning for Simple Requests
+# ============================================================
+
+from graph.planner import needs_planning
+
+# needs_planning() returns False for simple requests
+# and True for complex requests.
