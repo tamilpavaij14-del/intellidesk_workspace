@@ -1,8 +1,16 @@
-export default function HomePage() {
+import { checkBackendHealth } from "../utils/api";
+export default async function Home() {
+  const health = await checkBackendHealth();
+
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Intellidesk</h1>
-      <p>App is running successfully.</p>
+    <main style={{ padding: 32 }}>
+      <h1>IntelliDesk</h1>
+
+      <p>
+        {health.ok
+          ? `Backend reachable — ${health.message}`
+          : `Backend unreachable — ${health.message}`}
+      </p>
     </main>
   );
 }
