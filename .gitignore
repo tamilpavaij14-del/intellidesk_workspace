@@ -33,3 +33,5 @@ venv/
 
 .env
 venv/
+
+frontend/.next/
