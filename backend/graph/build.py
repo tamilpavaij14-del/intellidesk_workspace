@@ -4,7 +4,7 @@ from graph.state import AgentState
 from graph.planner import planner_node
 from graph.worker import worker_node
 from graph.auditor import auditor_node
-
+from graph.synthesizer import synthesizer_node
 
 MAX_ATTEMPTS = 3
 
@@ -17,7 +17,7 @@ def route_after_audit(state):
         return "advance"
 
     if attempts >= MAX_ATTEMPTS:
-        return "finish"
+        return "synthesize"
 
     return "retry"
 
@@ -28,7 +28,7 @@ def advance_step(state):
         "attempts": 0,
         "audit_feedback": None,
         "audit_status": None,
-    }
+        }
 
 
 def route_after_step(state):
@@ -36,7 +36,7 @@ def route_after_step(state):
     current_step = state.get("current_step", 0)
 
     if current_step >= len(plan):
-        return "finish"
+        return "synthesize"
 
     return "work"
 
@@ -48,6 +48,7 @@ def build_graph():
     graph.add_node("worker", worker_node)
     graph.add_node("auditor", auditor_node)
     graph.add_node("advance", advance_step)
+    graph.add_node("synthesizer", synthesizer_node)
 
     graph.add_edge(START, "planner")
     graph.add_edge("planner", "worker")
@@ -59,7 +60,7 @@ def build_graph():
         {
             "retry": "worker",
             "advance": "advance",
-            "finish": END,
+            "synthesize": "synthesizer",
         },
     )
 
@@ -68,8 +69,10 @@ def build_graph():
         route_after_step,
         {
             "work": "worker",
-            "finish": END,
+            "synthesize": "synthesizer",
         },
     )
+
+    graph.add_edge("synthesizer", END)
 
     return graph.compile()
