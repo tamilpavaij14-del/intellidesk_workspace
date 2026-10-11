@@ -1,1 +1,3 @@
-{"timestamp":"00:00:03.487","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:15.318","source":"Server","level":"WARN","message":"⚠ The \"middleware\" file convention is deprecated. Please use \"proxy\" instead.\n\n  To migrate automatically, run:\n  npx @next/codemod@canary middleware-to-proxy .\n\n  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy"}
+{"timestamp":"00:00:19.012","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:22.356","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
