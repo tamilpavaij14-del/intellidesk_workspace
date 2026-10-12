@@ -3,16 +3,16 @@ from services.llm import complete
 
 
 def synthesizer_node(state: dict) -> dict:
-    """Combine the task results into a final response."""
+    """Combine task results into a final response."""
 
-    # Log Synthesizer execution.
+    # Log synthesizer execution.
     log_transition("synthesizer", state)
 
-    # Get messages and task results.
+    # Copy the existing conversation and results.
     messages = list(state.get("messages") or [])
     results = list(state.get("results") or [])
 
-    # Get the original user goal.
+    # Find the original user request.
     user_goal = ""
 
     for message in messages:
@@ -20,48 +20,53 @@ def synthesizer_node(state: dict) -> dict:
             user_goal = message.get("content", "")
             break
 
-    # Prepare the task results.
+    # Format the task results.
     if results:
         results_text = "\n".join(
             f"{index}. {result}"
             for index, result in enumerate(results, start=1)
         )
     else:
-        results_text = "No tasks were completed successfully."
+        results_text = "No task results are available."
 
     # Prepare the final response prompt.
     prompt = f"""
-You are the final response synthesizer.
+You are the final response synthesizer for IntelliDesk.
 
-Original user goal:
+Original user request:
 {user_goal}
 
 Results produced by the workflow:
 {results_text}
 
-Write a clear and helpful response based only on these results.
-
-Rules:
-- Do not claim that an incomplete task was completed.
-- If a task failed, explain that honestly.
-- Do not invent facts or results.
+Instructions:
+- Write a clear and helpful final response.
+- Use only the information contained in the task results.
+- Do not invent facts or claim unfinished tasks succeeded.
+- Explain honestly when a task could not be completed.
+- Keep the response relevant to the original request.
 """
 
     # Generate the final response.
     try:
-        answer = complete(prompt).strip()
+        response = complete(prompt)
+
+        if isinstance(response, str):
+            answer = response.strip()
+        else:
+            answer = ""
 
     except Exception:
         answer = ""
 
-    # Handle an empty response.
+    # Provide a fallback if generation fails or returns no text.
     if not answer:
         answer = (
-            "I couldn't generate a final summary. "
+            "I couldn't generate a final summary at this time. "
             "Please try the request again."
         )
 
-    # Append the final answer to the conversation.
+    # Add the final answer to the conversation.
     messages.append(
         {
             "role": "assistant",
@@ -69,4 +74,8 @@ Rules:
         }
     )
 
-    # R
+    # Return the updated state.
+    return {
+        "messages": messages,
+        "final_answer": answer,
+    }
