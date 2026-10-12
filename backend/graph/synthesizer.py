@@ -1,8 +1,14 @@
+from graph.events import log_transition
 from services.llm import complete
 
 
-def synthesizer_node(state):
-    # Get messages and completed task results.
+def synthesizer_node(state: dict) -> dict:
+    """Combine the task results into a final response."""
+
+    # Log Synthesizer execution.
+    log_transition("synthesizer", state)
+
+    # Get messages and task results.
     messages = list(state.get("messages") or [])
     results = list(state.get("results") or [])
 
@@ -14,7 +20,7 @@ def synthesizer_node(state):
             user_goal = message.get("content", "")
             break
 
-    # Include only the results actually produced.
+    # Prepare the task results.
     if results:
         results_text = "\n".join(
             f"{index}. {result}"
@@ -33,14 +39,20 @@ Original user goal:
 Results produced by the workflow:
 {results_text}
 
-Write a clear, helpful response to the user based only on the results above.
-Do not claim that an incomplete task was completed.
-If there are no successful results, explain that honestly.
-Do not invent facts or results.
+Write a clear and helpful response based only on these results.
+
+Rules:
+- Do not claim that an incomplete task was completed.
+- If a task failed, explain that honestly.
+- Do not invent facts or results.
 """
 
     # Generate the final response.
-    answer = complete(prompt).strip()
+    try:
+        answer = complete(prompt).strip()
+
+    except Exception:
+        answer = ""
 
     # Handle an empty response.
     if not answer:
@@ -50,13 +62,11 @@ Do not invent facts or results.
         )
 
     # Append the final answer to the conversation.
-    messages.append({
-        "role": "assistant",
-        "content": answer,
-    })
+    messages.append(
+        {
+            "role": "assistant",
+            "content": answer,
+        }
+    )
 
-    # Return the updated state.
-    return {
-        "messages": messages,
-        "results": results,
-    }
+    # R
