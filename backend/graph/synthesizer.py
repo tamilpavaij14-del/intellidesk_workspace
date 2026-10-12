@@ -1,31 +1,62 @@
+from services.llm import complete
+
+
 def synthesizer_node(state):
-    plan = state.get("plan") or []
-    current_step = state.get("current_step", 0)
+    # Get messages and completed task results.
+    messages = list(state.get("messages") or [])
     results = list(state.get("results") or [])
 
-    if state.get("audit_status") == "PASS" and state.get("worker_result"):
-        results.append(state["worker_result"])
+    # Get the original user goal.
+    user_goal = ""
 
-    completed = min(current_step, len(plan))
-    remaining = plan[completed:]
+    for message in messages:
+        if message.get("role") == "user":
+            user_goal = message.get("content", "")
+            break
 
-    answer_parts = []
-
+    # Include only the results actually produced.
     if results:
-        answer_parts.append("Completed results:")
-        for index, result in enumerate(results, start=1):
-            answer_parts.append(f"{index}. {result}")
+        results_text = "\n".join(
+            f"{index}. {result}"
+            for index, result in enumerate(results, start=1)
+        )
+    else:
+        results_text = "No tasks were completed successfully."
 
-    if remaining:
-        answer_parts.append("\nIncomplete steps:")
-        for step in remaining:
-            answer_parts.append(f"- {step}")
-        answer_parts.append("Some steps could not be completed successfully.")
+    # Prepare the final response prompt.
+    prompt = f"""
+You are the final response synthesizer.
 
-    if not answer_parts:
-        answer_parts.append("No results were produced.")
+Original user goal:
+{user_goal}
 
+Results produced by the workflow:
+{results_text}
+
+Write a clear, helpful response to the user based only on the results above.
+Do not claim that an incomplete task was completed.
+If there are no successful results, explain that honestly.
+Do not invent facts or results.
+"""
+
+    # Generate the final response.
+    answer = complete(prompt).strip()
+
+    # Handle an empty response.
+    if not answer:
+        answer = (
+            "I couldn't generate a final summary. "
+            "Please try the request again."
+        )
+
+    # Append the final answer to the conversation.
+    messages.append({
+        "role": "assistant",
+        "content": answer,
+    })
+
+    # Return the updated state.
     return {
+        "messages": messages,
         "results": results,
-        "final_answer": "\n".join(answer_parts),
     }

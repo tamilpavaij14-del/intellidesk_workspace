@@ -5,14 +5,16 @@ async def worker_node(state):
     plan = state.get("plan") or []
     current_step = state.get("current_step", 0)
 
+    # Check whether all plan steps are completed
     if current_step >= len(plan):
         return {
-            "worker_result": "All plan steps are completed."
+            "last_result": "All plan steps are completed."
         }
 
+    # Get the current task
     task = plan[current_step]
-    feedback = state.get("audit_feedback")
 
+    # Create the Worker prompt
     prompt = f"""
 You are the Worker agent in a multi-agent workflow.
 
@@ -20,17 +22,26 @@ Execute the following task:
 {task}
 """
 
-    if feedback:
-        prompt += f"""
+    # Include Auditor feedback when retrying
+    last_audit = state.get("last_audit") or {}
+
+    if state.get("retry_count", 0) > 0 and last_audit:
+        critique = last_audit.get("critique", "")
+
+        if critique:
+            prompt += f"""
+
 The Auditor rejected the previous result.
+
 Auditor feedback:
-{feedback}
+{critique}
 
 Correct the previous result using this feedback.
 """
 
+    # Execute the task
     result = await run_agent(prompt)
 
     return {
-        "worker_result": result
+        "last_result": result
     }
