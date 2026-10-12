@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "postcss.config.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "next dev"
+  "Scripts":{
+    "dev":"next dev",
+    "build":"next build",
+    "start":"next start",
+    "lint":"eslint ."
   },
   "keywords": [],
   "author": "",
