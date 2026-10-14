@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from graph.build import initial_state
+from graph.build import initial_state, run_graph
 
 logger = logging.getLogger(__name__)
 
@@ -18,20 +18,10 @@ class ChatResponse(BaseModel):
     reply: str
 
 
-async def run_graph_async(state: dict) -> dict:
-    """Run the compiled LangGraph asynchronously."""
-
-    from graph.build import app, RECURSION_LIMIT
-
-    return await app.ainvoke(
-        state,
-        config={"recursion_limit": RECURSION_LIMIT},
-    )
-
-
 @router.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
-    # Validate the incoming message.
+    """Process a chat request using the LangGraph workflow."""
+
     message = request.message.strip()
 
     if not message:
@@ -40,14 +30,17 @@ async def chat(request: ChatRequest) -> ChatResponse:
             detail="Message cannot be empty.",
         )
 
-    # Create the initial graph state.
-    state = initial_state(message)
+    # Identity must come from a trusted authentication system.
+    # Do not accept identity values directly from the request body.
+    state = initial_state(
+        message=message,
+        user_id="",
+        project_id="",
+    )
 
     try:
-        # Execute the LangGraph workflow.
-        result = await run_graph_async(state)
+        result = await run_graph(state)
 
-        # Find the final assistant response.
         messages = result.get("messages") or []
 
         reply = next(

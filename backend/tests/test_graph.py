@@ -1,7 +1,7 @@
 import asyncio
 from unittest.mock import AsyncMock, patch
 
-from graph.build import build_graph, initial_state
+from graph.build import MAX_ATTEMPTS, build_graph, initial_state, run_graph
 
 
 def test_graph_completes_plan_successfully():
@@ -36,7 +36,10 @@ def test_graph_completes_plan_successfully():
                 {"last_audit": {"verdict": "PASS", "critique": ""}},
             ],
         ) as auditor,
-        patch("graph.build.synthesizer_node", return_value={}),
+        patch(
+            "graph.build.synthesizer_node",
+            return_value={},
+        ),
     ):
         app = build_graph()
         result = asyncio.run(app.ainvoke(state))
@@ -88,7 +91,10 @@ def test_graph_retries_when_auditor_fails():
                 {"last_audit": {"verdict": "PASS", "critique": ""}},
             ],
         ) as auditor,
-        patch("graph.build.synthesizer_node", return_value={}),
+        patch(
+            "graph.build.synthesizer_node",
+            return_value={},
+        ),
     ):
         app = build_graph()
         result = asyncio.run(app.ainvoke(state))
@@ -145,14 +151,103 @@ def test_graph_stops_after_max_attempts():
                 },
             ],
         ) as auditor,
-        patch("graph.build.synthesizer_node", return_value={}),
+        patch(
+            "graph.build.synthesizer_node",
+            return_value={},
+        ),
     ):
         app = build_graph()
         result = asyncio.run(app.ainvoke(state))
 
-    assert worker.await_count == 3
-    assert auditor.call_count == 3
+    assert worker.await_count == MAX_ATTEMPTS
+    assert auditor.call_count == MAX_ATTEMPTS
     assert result["current_step"] == 1
     assert len(result["results"]) == 1
     assert "Could not complete task" in result["results"][0]
+    assert result["retry_count"] == 0
+
+
+def test_acceptance_success_path(monkeypatch):
+    """The real graph should complete a task when the Auditor passes it."""
+
+    monkeypatch.setattr(
+        "graph.planner.complete",
+        lambda prompt: '{"steps": ["Calculate 15% of 840"]}',
+    )
+
+    async def fake_agent(prompt):
+        return "15% of 840 is 126."
+
+    monkeypatch.setattr("graph.worker.run_agent", fake_agent)
+
+    monkeypatch.setattr(
+        "graph.auditor.complete",
+        lambda prompt: '{"verdict": "PASS", "critique": ""}',
+    )
+
+    monkeypatch.setattr(
+        "graph.synthesizer.complete",
+        lambda prompt: "15% of 840 is 126.",
+    )
+
+    result = asyncio.run(
+        run_graph(
+            initial_state(
+                "Calculate 15% of 840 and explain the answer."
+            )
+        )
+    )
+
+    assert result["results"] == ["15% of 840 is 126."]
+    assert result["retry_count"] == 0
+    assert result["messages"][-1] == {
+        "role": "assistant",
+        "content": "15% of 840 is 126.",
+    }
+
+
+def test_acceptance_forced_failure_stops_after_three_attempts(
+    monkeypatch,
+):
+    """The real graph should stop after three rejected attempts."""
+
+    monkeypatch.setattr(
+        "graph.planner.complete",
+        lambda prompt: '{"steps": ["Calculate 15% of 840"]}',
+    )
+
+    attempts = 0
+
+    async def fake_agent(prompt):
+        nonlocal attempts
+        attempts += 1
+        return "The answer is 200."
+
+    monkeypatch.setattr("graph.worker.run_agent", fake_agent)
+
+    monkeypatch.setattr(
+        "graph.auditor.complete",
+        lambda prompt: (
+            '{"verdict": "FAIL", '
+            '"critique": "The calculation is incorrect."}'
+        ),
+    )
+
+    monkeypatch.setattr(
+        "graph.synthesizer.complete",
+        lambda prompt: "The task could not be completed successfully.",
+    )
+
+    result = asyncio.run(
+        run_graph(
+            initial_state(
+                "Calculate 15% of 840 and explain the answer."
+            )
+        )
+    )
+
+    assert attempts == MAX_ATTEMPTS
+    assert len(result["results"]) == 1
+    assert "Could not complete task" in result["results"][0]
+    assert result["messages"][-1]["role"] == "assistant"
     assert result["retry_count"] == 0
