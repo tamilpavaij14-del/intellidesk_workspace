@@ -8,8 +8,9 @@ def log_transition(node: str, state: dict) -> None:
     """Log graph-node execution without exposing prompts or secrets."""
 
     logger.info(
-        "Graph node executed | node=%s | timestamp=%s | current_step=%s",
+        "Graph node executed | node=%s | timestamp=%s | current_step=%s | retry_count=%s",
         node,
         datetime.now(timezone.utc).isoformat(),
         state.get("current_step", 0),
+        state.get("retry_count", 0),
     )
