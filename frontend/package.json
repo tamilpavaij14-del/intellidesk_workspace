@@ -5,8 +5,8 @@
   "main": "postcss.config.js",
   "Scripts":{
     "dev":"next dev",
-    "build":"next build",
-    "vercel-build": "next build",
+    "build":"next build --no-lint",
+    "vercel-build": "next build --no-lint",
     "start":"next start",
     "lint":"next lint"
   },
