@@ -1,4 +1,4 @@
-export default function LoginPage() {
+export default function Page() {
   return (
     <div>
       <h1>IntelliDesk</h1>

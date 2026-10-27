@@ -1,15 +1,8 @@
-// frontend/app/project/[id]/page.tsx
-
-export default async function ProjectPage(props: any{
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-
+export default function Page() {
   return (
     <div>
-      {/* Your existing Project page component code here */}
+      <h1>IntelliDesk</h1>
     </div>
   );
 }
+
