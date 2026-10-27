@@ -1,6 +1,6 @@
 // frontend/app/project/[id]/page.tsx
 
-export default async function ProjectPage({
+export default async function ProjectPage(props: any{
   params,
 }: {
   params: Promise<{ id: string }>;
