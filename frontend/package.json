@@ -5,9 +5,9 @@
   "main": "postcss.config.js",
   "Scripts":{
     "dev":"next dev",
-    "build":"next build",
+    "build":"next build --no-lint",
     "start":"next start",
-    "lint":"eslint ."
+    "lint":"next lint"
   },
   "keywords": [],
   "author": "",
