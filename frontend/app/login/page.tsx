@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
@@ -22,3 +23,12 @@ export default function LoginPage() {
     </main>
   );
 }
+=======
+export default function Page() {
+  return (
+    <div>
+      <h1>IntelliDesk</h1>
+    </div>
+  );
+}
+>>>>>>> 0a2ced1229742708dd9d8ef4fb170099e22dc9f9

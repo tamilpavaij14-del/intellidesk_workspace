@@ -20,3 +20,6 @@ app.add_middleware(
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "intellidesk-backend"}
+
+from routers import chat
+app.include_router(chat.router)

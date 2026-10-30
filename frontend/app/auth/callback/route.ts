@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -40,4 +41,9 @@ export async function GET(request: NextRequest) {
   }
 
   return response;
+=======
+import { NextResponse } from "next/server";
+export async function GET(request: Request) {
+  return new Response("OK", { status: 200 });
+>>>>>>> 0a2ced1229742708dd9d8ef4fb170099e22dc9f9
 }

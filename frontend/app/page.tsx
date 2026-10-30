@@ -1,4 +1,6 @@
 import { checkBackendHealth } from "../utils/api";
+import ChatBox from "../components/chat-box";
+
 export default async function Home() {
   const health = await checkBackendHealth();
 
@@ -11,6 +13,8 @@ export default async function Home() {
           ? `Backend reachable — ${health.message}`
           : `Backend unreachable — ${health.message}`}
       </p>
+
+      <ChatBox />
     </main>
   );
 }
